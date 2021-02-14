@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <title>Калькулятор</title>
+</head>
+<body>
+<div class="main">
+    <div class="calculator">
+        <form th:action="@{/calculate-me}" method="post">
+            <div class="operation">
+                <p>
+                    Выражение: <input id="mainStr" name="mainStr" type="text" size="22" readonly/>
+                    <input type="button" value="(" onClick="clickBtn('positiveBr')">
+                    <input type="button" value=")" onClick="clickBtn('negativeBr')">
+                </p>
+                <p>
+                    Уравнение:
+                    <input style='margin-left: 5px' type="text" size="4"/> x<sup>2</sup>
+                    <input style='margin-left: 5px' type="text" size="4"/> x
+                    <input style='margin-left: 5px' type="text" size="4"/>
+                </p>
+                <p>
+                    Что решаем?
+                    <input name="dzen" type="radio" value="expression" checked> Выражение
+                    <input name="dzen" type="radio" value="equation"> Уравнение
+                </p>
+
+                <button style='margin-left: 66px;'>Стереть</button>
+                <button>Сброс</button>
+                <p>Результат: <input style='margin-left: 13px' type="text" size="30" readonly disabled
+                                     th:value="${answer}"
+                /></p>
+            </div>
+
+            <table>
+                <tr class="buttons">
+                    <td><input type="button" value="1" onClick="clickBtn(1)"></td>
+                    <td><input type="button" value="2" onClick="clickBtn(2)"></td>
+                    <td><input type="button" value="3" onClick="clickBtn(3)"></td>
+                    <td><input type="button" value="+" onClick="clickBtn('plus')"></td>
+                </tr>
+                <tr class="buttons">
+                    <td><input type="button" value="4" onClick="clickBtn(4)"></td>
+                    <td><input type="button" value="5" onClick="clickBtn(5)"></td>
+                    <td><input type="button" value="6" onClick="clickBtn(6)"></td>
+                    <td><input type="button" value="-" onClick="clickBtn('minus')"></td>
+                </tr>
+                <tr class="buttons">
+                    <td><input type="button" value="7" onClick="clickBtn(7)"></td>
+                    <td><input type="button" value="8" onClick="clickBtn(8)"></td>
+                    <td><input type="button" value="9" onClick="clickBtn(9)"></td>
+                    <td><input type="button" value="x" onClick="clickBtn('mul')"></td>
+                </tr>
+                <tr class="buttons">
+                    <td><input type="button" value="+/-" OnClick="reverseNumber()"></td>
+                    <td><input type="button" value="0" onClick="clickBtn(0)"></td>
+                    <td><input type="submit" value="="></td>
+                    <td><input type="button" value="/" onClick="clickBtn('div')"></td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+</div>
+</body>
+
+<script>
+
+    var curStr = ""
+
+    function clickBtn(param) {
+        if (param === 'plus') {
+            document.getElementById('mainStr').value += '+'
+            curStr += ';+;'
+        } else if (param === 'minus') {
+            document.getElementById('mainStr').value += '-'
+            curStr += ';-;'
+        } else if (param === 'mul') {
+            document.getElementById('mainStr').value += '*'
+            curStr += ';*;'
+        } else if (param === 'div') {
+            document.getElementById('mainStr').value += '/'
+            curStr += ';/;'
+        }  else if (param === 'positiveBr') {
+            document.getElementById('mainStr').value += '('
+            curStr += ';(;'
+        }  else if (param === 'negativeBr') {
+            document.getElementById('mainStr').value += ')'
+            curStr += ';);'
+        } else {
+            document.getElementById('mainStr').value += param
+            curStr += param
+        }
+        console.log(curStr)
+    }
+
+    function reverseNumber() {
+        str = curStr.split(';')
+        curSym = str.length - 1
+
+        s = str[str.length - 1]
+        if(s[0] === "(") {
+            ss = s.slice(1, -1);
+            number = Number.parseInt(ss)
+            number *= (-1)
+            str.pop()
+            str.push(number);
+        } else {
+            // если последний символ в массиве отрицательный
+            if(Number.parseInt(str[str.length - 1]) < 0) {
+                k = str.pop() * (-1)
+                str.push(k);
+            } else
+            if (str[curSym - 1] !== ';') {
+                str[curSym] = '(' + '-' + str[curSym] + ')'
+
+            } else {
+                console.log("Недопустимый символ")
+            }
+        }
+
+        curStr = ""
+        document.getElementById('mainStr').value = ""
+        for (i = 0; i < str.length; i++) {
+            document.getElementById('mainStr').value += str[i]
+            if (str[i] === '+' || str[i] === '-' || str[i] === '*' || str[i] === '/' || str[i] === '(' || str[i] === ')') {
+                curStr = curStr + ';' + str[i] + ';'
+            } else {
+                curStr = curStr + str[i]
+            }
+        }
+        console.log("Array: " + curStr)
+
+    }
+</script>
+</html>
