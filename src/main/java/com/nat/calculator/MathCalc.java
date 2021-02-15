@@ -5,7 +5,7 @@ import java.util.Stack;
 public class MathCalc {
 /*
     public static void main(String s[]) {
-        String expression = "6*(5+3)*(-1)";
+        String expression = "6+(10+2)";
         System.out.println(new Calculator().decide(expression));
     }*/
 

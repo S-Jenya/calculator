@@ -11,9 +11,9 @@
         <form th:action="@{/calculate-me}" method="post">
             <div class="operation">
                 <p>
-                    Выражение: <input id="mainStr" name="mainStr" type="text" size="22" readonly/>
-                    <input type="button" value="(" onClick="clickBtn('positiveBr')">
-                    <input type="button" value=")" onClick="clickBtn('negativeBr')">
+                    Выражение: <input id="mainStr" th:value="${answer}" name="mainStr" type="text" size="22"/>
+                    <input type="button" value="(" onClick="clickBtn('(')">
+                    <input type="button" value=")" onClick="clickBtn(')')">
                 </p>
                 <p>
                     Уравнение:
@@ -27,37 +27,40 @@
                     <input name="dzen" type="radio" value="equation"> Уравнение
                 </p>
 
-                <button style='margin-left: 66px;'>Стереть</button>
-                <button>Сброс</button>
-                <p>Результат: <input style='margin-left: 13px' type="text" size="30" readonly disabled
-                                     th:value="${answer}"
-                /></p>
+                <input type="button" value="Стереть" style='margin-left: 66px;' onClick="drop()">
+                <input type="button" value="Сбросить" onClick="cleanSym()">
+<!--                <p>Результат: <input style='margin-left: 13px' type="text" size="30" readonly disabled th:value="${answer}" /></p>-->
             </div>
 
             <table>
                 <tr class="buttons">
-                    <td><input type="button" value="1" onClick="clickBtn(1)"></td>
-                    <td><input type="button" value="2" onClick="clickBtn(2)"></td>
-                    <td><input type="button" value="3" onClick="clickBtn(3)"></td>
-                    <td><input type="button" value="+" onClick="clickBtn('plus')"></td>
+                    <td><input type="button" value="1" onClick="clickBtn('1', 'false')"></td>
+                    <td><input type="button" value="2" onClick="clickBtn('2', 'false')"></td>
+                    <td><input type="button" value="3" onClick="clickBtn('3', 'false')"></td>
+                    <td><input type="button" value="+" onClick="clickBtn('+', 'false')"></td>
+                    <td><input type="button" value="MS" onClick="memorySave()"></td>
+                    <td><input type="button" value="M+"></td>
                 </tr>
                 <tr class="buttons">
-                    <td><input type="button" value="4" onClick="clickBtn(4)"></td>
-                    <td><input type="button" value="5" onClick="clickBtn(5)"></td>
-                    <td><input type="button" value="6" onClick="clickBtn(6)"></td>
-                    <td><input type="button" value="-" onClick="clickBtn('minus')"></td>
+                    <td><input type="button" value="4" onClick="clickBtn('4', 'false')"></td>
+                    <td><input type="button" value="5" onClick="clickBtn('5', 'false')"></td>
+                    <td><input type="button" value="6" onClick="clickBtn('6', 'false')"></td>
+                    <td><input type="button" value="-" onClick="clickBtn('-', 'false')"></td>
+                    <td><input type="button" value="MR" onClick="memoryRead()"></td>
+                    <td><input type="button" value="M-" onClick="memoryMinus()"></td>
                 </tr>
                 <tr class="buttons">
-                    <td><input type="button" value="7" onClick="clickBtn(7)"></td>
-                    <td><input type="button" value="8" onClick="clickBtn(8)"></td>
-                    <td><input type="button" value="9" onClick="clickBtn(9)"></td>
-                    <td><input type="button" value="x" onClick="clickBtn('mul')"></td>
+                    <td><input type="button" value="7" onClick="clickBtn('7', 'false')"></td>
+                    <td><input type="button" value="8" onClick="clickBtn('8', 'false')"></td>
+                    <td><input type="button" value="9" onClick="clickBtn('9', 'false')"></td>
+                    <td><input type="button" value="x" onClick="clickBtn('*', 'false')"></td>
+                    <td><input type="button" value="MC" onClick="memoryClear()"></td>
                 </tr>
                 <tr class="buttons">
                     <td><input type="button" value="+/-" OnClick="reverseNumber()"></td>
-                    <td><input type="button" value="0" onClick="clickBtn(0)"></td>
+                    <td><input type="button" value="0" onClick="clickBtn('0', 'false'), 'false'"></td>
                     <td><input type="submit" value="="></td>
-                    <td><input type="button" value="/" onClick="clickBtn('div')"></td>
+                    <td><input type="button" name="start" value="/" onClick="clickBtn('/', 'false')"></td>
                 </tr>
             </table>
 
@@ -68,35 +71,116 @@
 
 <script>
 
+    var savedValue
     var curStr = ""
 
-    function clickBtn(param) {
-        if (param === 'plus') {
-            document.getElementById('mainStr').value += '+'
+    let input = document.querySelector("#mainStr");
+
+    function memorySave() {
+        savedValue = Number(document.getElementById('mainStr').value)
+        console.log("Saved: " + savedValue)
+    }
+
+    function memoryRead() {
+        document.getElementById('mainStr').value = savedValue
+        console.log("Read!")
+    }
+
+    function memoryClear() {
+        savedValue = ""
+        console.log("Clear")
+    }
+
+    function memoryMinus() {
+        let s = Number(document.getElementById('mainStr').value)
+        console.log("s = " + s)
+        let res = savedValue - s
+        console.log("res = " + res)
+        document.getElementById('mainStr').value = res
+    }
+
+    function memoryPlus() {
+        savedValue = ""
+        console.log("Clear")
+    }
+
+    input.addEventListener("keyup", function (e) {
+        clickBtn(e.key, 'true');
+    });
+
+    function clickBtn(param, fromKey) {
+        if (param === '+') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += '+'
+            }
             curStr += ';+;'
-        } else if (param === 'minus') {
-            document.getElementById('mainStr').value += '-'
+        } else if (param === '-') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += '-'
+            }
             curStr += ';-;'
-        } else if (param === 'mul') {
-            document.getElementById('mainStr').value += '*'
+        } else if (param === '*') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += '*'
+            }
             curStr += ';*;'
-        } else if (param === 'div') {
-            document.getElementById('mainStr').value += '/'
+        } else if (param === '/') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += '/'
+            }
             curStr += ';/;'
-        }  else if (param === 'positiveBr') {
-            document.getElementById('mainStr').value += '('
+        } else if (param === '(') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += '('
+            }
             curStr += ';(;'
-        }  else if (param === 'negativeBr') {
-            document.getElementById('mainStr').value += ')'
+        } else if (param === ')') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += ')'
+            }
             curStr += ';);'
-        } else {
-            document.getElementById('mainStr').value += param
+        } else if (param === '0' || param === '1' || param === '2' || param === '3' || param === '4' ||
+            param === '5' || param === '6' || param === '7' || param === '8' || param === '9') {
+            if (fromKey === 'false') {
+                document.getElementById('mainStr').value += param
+            }
             curStr += param
         }
         console.log(curStr)
     }
 
     function reverseNumber() {
+        let str = document.getElementById('mainStr').value
+        let v = str[str.length - 4] + str[str.length - 3] + str[str.length - 2] + str[str.length - 1]
+        console.log(v)
+        if (v === '(-1)') {
+            str = str.slice(0, -5)
+            document.getElementById('mainStr').value = str
+        } else {
+            document.getElementById('mainStr').value += '*(-1)'
+        }
+    }
+
+    // Очищаем поле "Выражение"
+    function drop() {
+        document.getElementById('mainStr').value = ""
+    }
+
+    // очищает последний введённый символ
+    function cleanSym() {
+        let str = document.getElementById('mainStr').value
+        str = str.slice(0, -1)
+        document.getElementById('mainStr').value = str
+    }
+
+    // Отправляем запрос на сервер по нажатии на Enter
+    window.addEventListener ("keypress", function (e) {
+        if (e.keyCode !== 13) return;
+        document.getElementsByName("start").click()
+        alert ("enter!");
+    });
+
+    /*function reverseNumber() {
         str = curStr.split(';')
         curSym = str.length - 1
 
@@ -133,6 +217,6 @@
         }
         console.log("Array: " + curStr)
 
-    }
+    }*/
 </script>
 </html>
