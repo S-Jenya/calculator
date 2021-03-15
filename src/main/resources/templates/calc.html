@@ -9,18 +9,19 @@
 <div class="main">
     <div class="calculator">
         <form th:action="@{/calculate-me}" method="post">
+
             <div class="operation">
                 <p>
-                    <input type="hidden" name="mode" value="1">
-                    Выражение: <input id="mainStr" th:value="${answer}" name="mainStr" type="text" size="22"/>
+                    <input type="hidden" name="mode" value="">
+                    Выражение: <input id="mainStr" th:value="${mainStr}" name="mainStr" type="text" size="22" disabled/>
                     <input type="button" value="(" onClick="clickBtn('(', 'false')">
                     <input type="button" value=")" onClick="clickBtn(')', 'false')">
                 </p>
                 <p>
                     Уравнение:
-                    <input style='margin-left: 5px' type="text" name="paramA" size="4"/> x<sup>2</sup>
-                    <input style='margin-left: 5px' type="text" name="paramB" size="4"/> x
-                    <input style='margin-left: 5px' type="text" name="paramC" size="4"/>
+                    A = <input style='margin-left: 5px' th:value="${paramA}" id="sqrtA" type="text" name="paramA" size="4"  value="" disabled/>
+                    B = <input style='margin-left: 5px' th:value="${paramB}" id="sqrtB" type="text" name="paramB" size="4"  value="" disabled/>
+                    C = <input style='margin-left: 5px' th:value="${paramC}" id="sqrtC" type="text" name="paramC" size="4"  value="" disabled/>
                 </p>
                 <p>
                     Что решаем?
@@ -30,7 +31,8 @@
 
                 <input type="button" value="Стереть" style='margin-left: 66px;' onClick="drop()">
                 <input type="button" value="Сбросить" onClick="cleanSym()">
-<!--                <p>Результат: <input style='margin-left: 13px' type="text" size="30" readonly disabled th:value="${answer}" /></p>-->
+                <p>Результат: <input style='margin-left: 13px' type="text" size="30" readonly disabled
+                                     th:value="${answer}"/></p>
             </div>
 
             <table>
@@ -39,23 +41,23 @@
                     <td><input type="button" value="2" onClick="clickBtn('2', 'false')"></td>
                     <td><input type="button" value="3" onClick="clickBtn('3', 'false')"></td>
                     <td><input type="button" value="+" onClick="clickBtn('+', 'false')"></td>
-                    <td><input type="button" value="MS" onClick="memorySave()"></td>
-                    <td><input type="button" value="M+" onClick="memoryPlus()"></td>
+                    <!--                    <td><input type="button" value="MS" onClick="memorySave()"></td>-->
+                    <!--                    <td><input type="button" value="M+" onClick="memoryPlus()"></td>-->
                 </tr>
                 <tr class="buttons">
                     <td><input type="button" value="4" onClick="clickBtn('4', 'false')"></td>
                     <td><input type="button" value="5" onClick="clickBtn('5', 'false')"></td>
                     <td><input type="button" value="6" onClick="clickBtn('6', 'false')"></td>
                     <td><input type="button" value="-" onClick="clickBtn('-', 'false')"></td>
-                    <td><input type="button" value="MR" onClick="memoryRead()"></td>
-                    <td><input type="button" value="M-" onClick="memoryMinus()"></td>
+                    <!--                    <td><input type="button" value="MR" onClick="memoryRead()"></td>-->
+                    <!--                    <td><input type="button" value="M-" onClick="memoryMinus()"></td>-->
                 </tr>
                 <tr class="buttons">
                     <td><input type="button" value="7" onClick="clickBtn('7', 'false')"></td>
                     <td><input type="button" value="8" onClick="clickBtn('8', 'false')"></td>
                     <td><input type="button" value="9" onClick="clickBtn('9', 'false')"></td>
                     <td><input type="button" value="x" onClick="clickBtn('*', 'false')"></td>
-                    <td><input type="button" value="MC" onClick="memoryClear()"></td>
+                    <!--                    <td><input type="button" value="MC" onClick="memoryClear()"></td>-->
                 </tr>
                 <tr class="buttons">
                     <td><input type="button" value="+/-" OnClick="reverseNumber()"></td>
@@ -73,26 +75,215 @@
 
 <script>
 
+    document.onreadystatechange = function(){
+        if(document.readyState === 'complete'){
+            document.getElementsByName('mode')[0].value = "";
+            document.getElementsByName('modeExp')[0].checked = false
+            document.getElementsByName('modEq')[0].checked = false
+        }
+    }
+
     var savedValue
     var curStr = ""
 
     let input = document.querySelector("#mainStr");
 
-    function setMod(myMode){
-        if(myMode === "modeExp") {
+    function setMod(myMode) {
+        if (myMode === "modeExp") {
             document.getElementsByName('modeExp')[0].checked = true
             document.getElementsByName('modEq')[0].checked = false
-            document.getElementById('mode').value = "1"
-        } else {
-            document.getElementsByName('modEq')[0].checked = true
+
+            document.getElementById('mainStr').removeAttribute("disabled", "disabled");
+            document.getElementById('sqrtA').setAttribute("disabled", "disabled");
+            document.getElementById('sqrtB').setAttribute("disabled", "disabled");
+            document.getElementById('sqrtC').setAttribute("disabled", "disabled");
+
+            document.getElementsByName('mode')[0].value = "1";
+            document.getElementById('sqrtA').value = ""
+            document.getElementById('sqrtB').value = ""
+            document.getElementById('sqrtC').value = ""
+
+        } else if (myMode === "modEq") {
             document.getElementsByName('modeExp')[0].checked = false
-            document.getElementById('mode').value = '0'
+            document.getElementsByName('modEq')[0].checked = true
+
+            document.getElementById('mainStr').setAttribute("disabled", "disabled");
+            document.getElementById('sqrtA').removeAttribute("disabled", "disabled");
+            document.getElementById('sqrtB').removeAttribute("disabled", "disabled");
+            document.getElementById('sqrtC').removeAttribute("disabled", "disabled");
+
+            document.getElementsByName('mode')[0].value = '0'
+            document.getElementById('mainStr').value = ""
+            curStr = ""
         }
     }
 
     function memorySave() {
         savedValue = Number(document.getElementById('mainStr').value)
         console.log("Saved: " + savedValue)
+    }
+
+    input.addEventListener("keyup", function (e) {
+        clickBtn(e.key, 'true');
+    });
+
+    function clickBtn(param, fromKey) {
+        if (document.getElementsByName('modeExp')[0].checked) {
+            if (param === '+') {
+                if (fromKey === 'false') {
+                    if(document.getElementsByName('modeExp')[0].checked){
+                        document.getElementById('mainStr').value += '+'
+                    }
+                }
+                curStr += ';+;'
+            } else if (param === '-') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += '-'
+                }
+                curStr += ';-;'
+            } else if (param === '*') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += '*'
+                }
+                curStr += ';*;'
+            } else if (param === '/') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += '/'
+                }
+                curStr += ';/;'
+            } else if (param === '(') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += '('
+                }
+                curStr += ';(;'
+            } else if (param === ')') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += ')'
+                }
+                curStr += ';);'
+            } else if (param === '%') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += '%'
+                }
+                curStr += ';%;'
+            } else if (param === '0' || param === '1' || param === '2' || param === '3' || param === '4' ||
+                param === '5' || param === '6' || param === '7' || param === '8' || param === '9') {
+                if (fromKey === 'false') {
+                    document.getElementById('mainStr').value += param
+                }
+                curStr += param
+            }
+            console.log(curStr)
+        }
+    }
+
+    /*function reverseNumber() {
+        let str = document.getElementById('mainStr').value
+        let v = str[str.length - 4] + str[str.length - 3] + str[str.length - 2] + str[str.length - 1]
+        console.log(v)
+        if (v === '(-1)') {
+            str = str.slice(0, -5)
+            document.getElementById('mainStr').value = str
+        } else {
+            document.getElementById('mainStr').value += '*(-1)'
+        }
+    }*/
+
+
+    // Отправляем запрос на сервер по нажатии на Enter
+    window.addEventListener("keypress", function (e) {
+        if (e.keyCode !== 13) return;
+        if(document.getElementsByName('mode')[0].value !== '') {
+            document.getElementsByName("start").click()
+        } else {
+            alert("Укажите режим!")
+        }
+    });
+
+    function reverseNumber() {
+        str = curStr.split(';').filter(function (el) {
+            return el != "";
+        })
+        curSym = str.length - 1
+
+        s = str[str.length - 1]
+        if (s !== '+' && s !== '-' && s !== '*' && s !== '/' && s !== '(' && s !== ')') {
+            if (s[0] === "(") {
+                ss = s.slice(1, -1);
+                number = Number.parseInt(ss)
+                number *= (-1)
+                str.pop()
+                str.push(number);
+            } else {
+                // если последний символ в массиве отрицательный
+                if (Number.parseInt(str[str.length - 1]) < 0) {
+                    k = str.pop() * (-1)
+                    str.push(k);
+                } else if (str[curSym - 1] !== ';') {
+                    str[curSym] = '(' + '-' + str[curSym] + ')'
+
+                } else {
+                    console.log("Недопустимый символ")
+                }
+            }
+
+            curStr = ""
+            document.getElementById('mainStr').value = ""
+            for (i = 0; i < str.length; i++) {
+                document.getElementById('mainStr').value += str[i]
+                if (str[i] === '+' || str[i] === '-' || str[i] === '*' || str[i] === '/' || str[i] === '(' || str[i] === ')') {
+                    curStr = curStr + ';' + str[i] + ';'
+                } else {
+                    curStr = curStr + str[i]
+                }
+            }
+            console.log("Array: " + curStr)
+        }
+
+
+    }
+
+    // Очищаем поле "Выражение"
+    function drop() {
+        if (document.getElementsByName('modeExp')[0].checked) {
+            document.getElementById('mainStr').value = ""
+        } else if (document.getElementsByName('modEq')[0].checked) {
+            document.getElementById('sqrtA').value = ""
+            document.getElementById('sqrtB').value = ""
+            document.getElementById('sqrtC').value = ""
+        }
+    }
+
+    // очищает последний введённый символ
+    function cleanSym() {
+        if (document.getElementsByName('modeExp')[0].checked) {
+            let str = document.getElementById('mainStr').value
+            str = str.slice(0, -1)
+            curStr = curStr.slice(0, -1)
+            document.getElementById('mainStr').value = str
+        } else if (document.getElementsByName('modEq')[0].checked) {
+            let strA = document.getElementById('sqrtA').value
+            let lenghtStrA = document.getElementById('sqrtA').value.length
+
+            let strB = document.getElementById('sqrtB').value
+            let lenghtStrB = document.getElementById('sqrtB').value.length
+
+            let strC = document.getElementById('sqrtC').value;
+            let lenghtStrC = document.getElementById('sqrtC').value.length
+
+            let mainSqrtStr = strA + strB + strC;
+            mainSqrtStr = mainSqrtStr.slice(0, -1)
+            sA = mainSqrtStr.slice(0, lenghtStrA)
+            mainSqrtStr = mainSqrtStr.slice(lenghtStrA)
+            document.getElementById('sqrtA').value = sA
+
+            sB = mainSqrtStr.slice(0, lenghtStrB)
+            mainSqrtStr = mainSqrtStr.slice(lenghtStrB)
+            document.getElementById('sqrtB').value = sB
+
+            sC = mainSqrtStr.slice(0, lenghtStrC)
+            document.getElementById('sqrtC').value = sC
+        }
     }
 
     function memoryRead() {
@@ -117,124 +308,5 @@
         document.getElementById('mainStr').value = res
     }
 
-    input.addEventListener("keyup", function (e) {
-        clickBtn(e.key, 'true');
-    });
-
-    function clickBtn(param, fromKey) {
-        if (param === '+') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '+'
-            }
-            curStr += ';+;'
-        } else if (param === '-') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '-'
-            }
-            curStr += ';-;'
-        } else if (param === '*') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '*'
-            }
-            curStr += ';*;'
-        } else if (param === '/') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '/'
-            }
-            curStr += ';/;'
-        } else if (param === '(') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '('
-            }
-            curStr += ';(;'
-        } else if (param === ')') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += ')'
-            }
-            curStr += ';);'
-        }  else if (param === '%') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += '%'
-            }
-            curStr += ';%;'
-        } else if (param === '0' || param === '1' || param === '2' || param === '3' || param === '4' ||
-            param === '5' || param === '6' || param === '7' || param === '8' || param === '9') {
-            if (fromKey === 'false') {
-                document.getElementById('mainStr').value += param
-            }
-            curStr += param
-        }
-        console.log(curStr)
-    }
-
-    function reverseNumber() {
-        let str = document.getElementById('mainStr').value
-        let v = str[str.length - 4] + str[str.length - 3] + str[str.length - 2] + str[str.length - 1]
-        console.log(v)
-        if (v === '(-1)') {
-            str = str.slice(0, -5)
-            document.getElementById('mainStr').value = str
-        } else {
-            document.getElementById('mainStr').value += '*(-1)'
-        }
-    }
-
-    // Очищаем поле "Выражение"
-    function drop() {
-        document.getElementById('mainStr').value = ""
-    }
-
-    // очищает последний введённый символ
-    function cleanSym() {
-        let str = document.getElementById('mainStr').value
-        str = str.slice(0, -1)
-        document.getElementById('mainStr').value = str
-    }
-
-    // Отправляем запрос на сервер по нажатии на Enter
-    window.addEventListener ("keypress", function (e) {
-        if (e.keyCode !== 13) return;
-        document.getElementsByName("start").click()
-        alert ("enter!");
-    });
-
-    /*function reverseNumber() {
-        str = curStr.split(';')
-        curSym = str.length - 1
-
-        s = str[str.length - 1]
-        if(s[0] === "(") {
-            ss = s.slice(1, -1);
-            number = Number.parseInt(ss)
-            number *= (-1)
-            str.pop()
-            str.push(number);
-        } else {
-            // если последний символ в массиве отрицательный
-            if(Number.parseInt(str[str.length - 1]) < 0) {
-                k = str.pop() * (-1)
-                str.push(k);
-            } else
-            if (str[curSym - 1] !== ';') {
-                str[curSym] = '(' + '-' + str[curSym] + ')'
-
-            } else {
-                console.log("Недопустимый символ")
-            }
-        }
-
-        curStr = ""
-        document.getElementById('mainStr').value = ""
-        for (i = 0; i < str.length; i++) {
-            document.getElementById('mainStr').value += str[i]
-            if (str[i] === '+' || str[i] === '-' || str[i] === '*' || str[i] === '/' || str[i] === '(' || str[i] === ')') {
-                curStr = curStr + ';' + str[i] + ';'
-            } else {
-                curStr = curStr + str[i]
-            }
-        }
-        console.log("Array: " + curStr)
-
-    }*/
 </script>
 </html>
